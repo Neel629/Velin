@@ -175,7 +175,7 @@ export default function SplitExpensesPage() {
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-lg">
-                        {Number(group.total_amount).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                        {Number(group.total_amount).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {settledCount}/{totalMembers} settled
@@ -193,7 +193,7 @@ export default function SplitExpensesPage() {
                         <div className="flex flex-col">
                           <span className="font-medium text-sm">{member.member_name}</span>
                           <span className="text-xs text-muted-foreground">
-                            {Number(member.owed_amount).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                            {Number(member.owed_amount).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                           </span>
                         </div>
                         <Button

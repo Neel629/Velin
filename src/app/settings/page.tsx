@@ -34,7 +34,7 @@ export default function SettingsPage() {
   
   // Form State
   const [fullName, setFullName] = useState("")
-  const [currency, setCurrency] = useState("USD")
+  const [currency, setCurrency] = useState("INR")
   const [themePref, setThemePref] = useState("system")
   
   const { setTheme } = useTheme()
@@ -45,7 +45,7 @@ export default function SettingsPage() {
 
       if (data) {
         setFullName(data.full_name || "")
-        setCurrency(data.default_currency || "USD")
+        setCurrency(data.default_currency || "INR")
         setThemePref(data.theme_preference || "system")
       }
       setLoading(false)
@@ -135,7 +135,7 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="currency">Default Currency</Label>
-              <Select value={currency} onValueChange={(val) => setCurrency(val || "USD")}>
+              <Select value={currency} onValueChange={(val) => setCurrency(val || "INR")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

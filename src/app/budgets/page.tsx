@@ -213,10 +213,10 @@ export default function BudgetsPage() {
               <CardContent className="pb-6">
                 <div className="flex justify-between items-end mb-2">
                   <div className="text-2xl font-bold">
-                    {budget.spent.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                    {budget.spent.toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                   </div>
                   <div className="text-sm text-muted-foreground mb-1">
-                    of {Number(budget.limit_amount).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                    of {Number(budget.limit_amount).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                   </div>
                 </div>
                 

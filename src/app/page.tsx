@@ -164,7 +164,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {kpis.totalIncome.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+              {kpis.totalIncome.toLocaleString("en-IN", { style: "currency", currency: "INR" })}
             </div>
           </CardContent>
         </Card>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {kpis.totalExpense.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+              {kpis.totalExpense.toLocaleString("en-IN", { style: "currency", currency: "INR" })}
             </div>
           </CardContent>
         </Card>
@@ -186,7 +186,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {kpis.netSavings.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+              {kpis.netSavings.toLocaleString("en-IN", { style: "currency", currency: "INR" })}
             </div>
           </CardContent>
         </Card>
@@ -218,7 +218,7 @@ export default function DashboardPage() {
               <LineChart data={lineChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
                 <RechartsTooltip 
                   contentStyle={{ backgroundColor: "var(--card)", borderColor: "var(--border)", borderRadius: "var(--radius)" }} 
                   itemStyle={{ color: "var(--foreground)" }}
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                 <RechartsTooltip 
                   contentStyle={{ backgroundColor: "var(--card)", borderColor: "var(--border)", borderRadius: "var(--radius)" }}
                   itemStyle={{ color: "var(--foreground)" }}
-                  formatter={(value: any) => Number(value).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                  formatter={(value: any) => Number(value).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -282,7 +282,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <div className={`font-bold tabular-nums ${isIncome ? "text-emerald-500" : "text-foreground"}`}>
-                      {isIncome ? "+" : "-"}{Math.abs(amount).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                      {isIncome ? "+" : "-"}{Math.abs(amount).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                     </div>
                   </div>
                 )

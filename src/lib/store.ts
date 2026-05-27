@@ -149,7 +149,7 @@ export function getProfile() {
     const defaultProfile = {
       id: uuidv4(),
       full_name: "Guest User",
-      default_currency: "USD",
+      default_currency: "INR",
       theme_preference: "system",
       updated_at: new Date().toISOString()
     };
