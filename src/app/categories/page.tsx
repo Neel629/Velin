@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { supabase } from "@/lib/supabase"
+import { getCategories, addCategory, deleteCategory } from "@/lib/store"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
 export default function CategoriesPage() {
@@ -34,12 +34,7 @@ export default function CategoriesPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
+      const data = getCategories()
       setCategories(data || [])
     } catch (error: any) {
       toast.error("Failed to load categories", { description: error.message })
@@ -57,12 +52,10 @@ export default function CategoriesPage() {
     }
 
     try {
-      const { error } = await supabase.from("categories").insert({
+      addCategory({
         name: name.trim(),
         type,
       })
-
-      if (error) throw error
 
       toast.success("Category added successfully")
       setName("")
@@ -74,8 +67,7 @@ export default function CategoriesPage() {
 
   async function handleDelete(id: string) {
     try {
-      const { error } = await supabase.from("categories").delete().eq("id", id)
-      if (error) throw error
+      deleteCategory(id)
       toast.success("Category deleted")
       fetchData()
     } catch (error: any) {

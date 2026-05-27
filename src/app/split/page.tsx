@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { format, parseISO } from "date-fns"
 import { Plus, Users, LockIcon, CheckCircle2, Circle } from "lucide-react"
 
-import { supabase } from "@/lib/supabase"
+import { getSplitGroups, addSplitGroup, updateSplitMemberStatus } from "@/lib/store"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -41,12 +41,7 @@ export default function SplitExpensesPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from("split_groups")
-        .select(`*, split_members(*)`)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
+      const data = getSplitGroups()
       setGroups(data || [])
     } catch (error: any) {
       toast.error(error.message)
@@ -58,33 +53,17 @@ export default function SplitExpensesPage() {
   async function handleCreateGroup(data: SplitGroupFormValues) {
     setIsSubmitting(true)
     try {
-      // 1. Insert the Split Group
-      const { data: groupData, error: groupError } = await supabase
-        .from("split_groups")
-        .insert([{
-          title: data.title,
-          total_amount: data.total_amount,
-          event_date: data.event_date.toISOString().split("T")[0],
-          notes: data.notes || null
-        }])
-        .select()
-        .single()
-
-      if (groupError) throw groupError
-
-      // 2. Insert the Members
-      const membersToInsert = data.members.map((m) => ({
-        split_group_id: groupData.id,
+      // 1. Insert the Split Group and Members
+      addSplitGroup({
+        title: data.title,
+        total_amount: data.total_amount,
+        event_date: data.event_date.toISOString().split("T")[0],
+        notes: data.notes || null
+      }, data.members.map(m => ({
         member_name: m.name,
         owed_amount: m.amount,
         status: 'pending'
-      }))
-
-      const { error: membersError } = await supabase
-        .from("split_members")
-        .insert(membersToInsert)
-
-      if (membersError) throw membersError
+      })))
 
       toast.success("Split group created successfully")
       setOpen(false)
@@ -99,12 +78,7 @@ export default function SplitExpensesPage() {
   async function handleToggleSettle(memberId: string, currentStatus: string) {
     const newStatus = currentStatus === 'pending' ? 'settled' : 'pending'
     try {
-      const { error } = await supabase
-        .from("split_members")
-        .update({ status: newStatus })
-        .eq("id", memberId)
-      
-      if (error) throw error
+      updateSplitMemberStatus(memberId, newStatus)
       
       toast.success(`Member marked as ${newStatus}`)
       // Optimistic UI update

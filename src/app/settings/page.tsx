@@ -6,7 +6,7 @@ import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import { LockIcon, Save, UserIcon } from "lucide-react"
 
-import { supabase } from "@/lib/supabase"
+import { getProfile, updateProfile as updateProfileStore } from "@/lib/store"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -40,12 +40,8 @@ export default function SettingsPage() {
   const { setTheme } = useTheme()
 
   useEffect(() => {
-    async function getProfile() {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .limit(1)
-        .single()
+    async function getProfileData() {
+      const data = getProfile()
 
       if (data) {
         setFullName(data.full_name || "")
@@ -54,7 +50,7 @@ export default function SettingsPage() {
       }
       setLoading(false)
     }
-    getProfile()
+    getProfileData()
   }, [])
 
   async function handleSave(e: React.FormEvent) {
@@ -62,22 +58,11 @@ export default function SettingsPage() {
     
     setSaving(true)
     try {
-      // Get the first profile to update
-      const { data: profile } = await supabase.from("profiles").select("id").limit(1).single()
-      
-      if (profile) {
-        const { error } = await supabase
-          .from("profiles")
-          .update({
-            full_name: fullName,
-            default_currency: currency,
-            theme_preference: themePref,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", profile.id)
-
-        if (error) throw error
-      }
+      updateProfileStore({
+        full_name: fullName,
+        default_currency: currency,
+        theme_preference: themePref
+      })
 
       // Update the actual app theme immediately
       setTheme(themePref)

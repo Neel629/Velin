@@ -19,7 +19,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { supabase } from "@/lib/supabase"
+import { getTransactions } from "@/lib/store"
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "hsl(var(--muted-foreground))"]
 
@@ -30,12 +30,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function getData() {
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("*, categories(name)")
-        .order("transaction_date", { ascending: false })
-
-      if (!error && data) {
+      const data = getTransactions()
+      if (data) {
         setTransactions(data)
       }
       setLoading(false)

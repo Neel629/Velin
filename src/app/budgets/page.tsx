@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { startOfWeek, startOfMonth, startOfYear, endOfWeek, endOfMonth, endOfYear, isWithinInterval, parseISO } from "date-fns"
 import { Plus, Target, LockIcon, AlertTriangle, Trash2 } from "lucide-react"
 
-import { supabase } from "@/lib/supabase"
+import { getBudgets, getCategories, getTransactions, addBudget, deleteBudget } from "@/lib/store"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -45,28 +45,13 @@ export default function BudgetsPage() {
     try {
       const startOfYr = startOfYear(new Date()).toISOString()
 
-      const [budgetsRes, categoriesRes, txRes] = await Promise.all([
-        supabase
-          .from("budgets")
-          .select("*, categories(name, color)")
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("categories")
-          .select("*"),
-        supabase
-          .from("transactions")
-          .select("*")
-          .eq("type", "expense")
-          .gte("transaction_date", startOfYr)
-      ])
+      const budgetsRes = getBudgets()
+      const categoriesRes = getCategories()
+      const txRes = getTransactions().filter((tx: any) => tx.type === "expense" && tx.transaction_date >= startOfYr)
 
-      if (budgetsRes.error) throw budgetsRes.error
-      if (categoriesRes.error) throw categoriesRes.error
-      if (txRes.error) throw txRes.error
-
-      setBudgets(budgetsRes.data || [])
-      setCategories(categoriesRes.data || [])
-      setTransactions(txRes.data || [])
+      setBudgets(budgetsRes || [])
+      setCategories(categoriesRes || [])
+      setTransactions(txRes || [])
     } catch (error: any) {
       toast.error(error.message)
     } finally {
@@ -77,16 +62,12 @@ export default function BudgetsPage() {
   async function handleCreateBudget(data: BudgetFormValues) {
     setIsSubmitting(true)
     try {
-      const { error } = await supabase
-        .from("budgets")
-        .insert([{
-          category_id: data.category_id,
-          limit_amount: data.limit_amount,
-          period: data.period,
-          alert_threshold: data.alert_threshold
-        }])
-
-      if (error) throw error
+      addBudget({
+        category_id: data.category_id,
+        limit_amount: data.limit_amount,
+        period: data.period,
+        alert_threshold: data.alert_threshold
+      })
 
       toast.success("Budget created successfully")
       setOpen(false)
@@ -101,8 +82,7 @@ export default function BudgetsPage() {
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this budget?")) return
     try {
-      const { error } = await supabase.from("budgets").delete().eq("id", id)
-      if (error) throw error
+      deleteBudget(id)
       toast.success("Budget deleted")
       setBudgets(prev => prev.filter(b => b.id !== id))
     } catch (error: any) {

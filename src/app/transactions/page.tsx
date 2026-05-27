@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { supabase } from "@/lib/supabase"
+import { getTransactions, addTransaction, deleteTransaction, getCategories } from "@/lib/store"
 import { TransactionForm, TransactionFormValues } from "@/components/transaction-form"
 
 export default function TransactionsPage() {
@@ -41,21 +41,11 @@ export default function TransactionsPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      const [txRes, catRes] = await Promise.all([
-        supabase
-          .from("transactions")
-          .select("*, categories(name)")
-          .order("transaction_date", { ascending: false }),
-        supabase
-          .from("categories")
-          .select("*"),
-      ])
+      const txData = getTransactions()
+      const catData = getCategories()
 
-      if (txRes.error) throw txRes.error
-      if (catRes.error) throw catRes.error
-
-      setTransactions(txRes.data || [])
-      setCategories(catRes.data || [])
+      setTransactions(txData || [])
+      setCategories(catData || [])
     } catch (error: any) {
       toast.error("Failed to load data", { description: error.message })
     } finally {
@@ -66,7 +56,7 @@ export default function TransactionsPage() {
   async function handleAddTransaction(values: TransactionFormValues) {
     try {
       const totalAmount = values.amount * values.quantity
-      const { error } = await supabase.from("transactions").insert({
+      addTransaction({
         type: values.type,
         remarks: values.remarks,
         amount: values.amount,
@@ -75,8 +65,6 @@ export default function TransactionsPage() {
         transaction_date: values.transaction_date.toISOString(),
         category_id: values.category_id !== "none" ? values.category_id : null,
       })
-
-      if (error) throw error
 
       toast.success("Transaction added successfully")
       setOpen(false)
@@ -88,8 +76,7 @@ export default function TransactionsPage() {
 
   async function handleDelete(id: string) {
     try {
-      const { error } = await supabase.from("transactions").delete().eq("id", id)
-      if (error) throw error
+      deleteTransaction(id)
       toast.success("Transaction deleted")
       fetchData()
     } catch (error: any) {
