@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { LockIcon, Save, UserIcon } from "lucide-react"
 
 import { getProfile, updateProfile as updateProfileStore } from "@/lib/store"
+import { downloadCSV } from "@/lib/export"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -172,6 +173,27 @@ export default function SettingsPage() {
             </Button>
           </CardFooter>
         </form>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Data Management
+          </CardTitle>
+          <CardDescription>
+            Download your clean data and analytics as a structured CSV report.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              Your financial data is stored locally on this device. You can export a comprehensive report containing all your analytics, transactions, budgets, and split expenses into a shareable spreadsheet.
+            </p>
+            <Button onClick={downloadCSV} variant="outline" className="w-fit mt-2">
+              Download Analytics & Data Report (.csv)
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     </div>
   )

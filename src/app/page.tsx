@@ -6,7 +6,7 @@ import { format, subMonths, startOfMonth, isSameMonth, parseISO } from "date-fns
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ArrowDownIcon, ArrowUpIcon, DollarSign, Wallet, LockIcon } from "lucide-react"
+import { ArrowDownIcon, ArrowUpIcon, DollarSign, Wallet, LockIcon, DownloadIcon } from "lucide-react"
 import {
   LineChart,
   Line,
@@ -20,6 +20,7 @@ import {
   Cell,
 } from "recharts"
 import { getTransactions } from "@/lib/store"
+import { downloadCSV } from "@/lib/export"
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "hsl(var(--muted-foreground))"]
 
@@ -151,9 +152,15 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">Here is an overview of your finances.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">Here is an overview of your finances.</p>
+        </div>
+        <Button onClick={downloadCSV} variant="outline" className="shrink-0">
+          <DownloadIcon className="mr-2 h-4 w-4" />
+          Export Analytics
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
