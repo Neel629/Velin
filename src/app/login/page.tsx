@@ -19,6 +19,12 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
 
+  const loginWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    })
+  }
+
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -92,6 +98,14 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col gap-4">
             <Button className="w-full" type="submit" disabled={loading}>
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full" 
+              onClick={loginWithGoogle}
+            >
+              Continue with Google
             </Button>
             <Button 
               type="button" 
