@@ -32,11 +32,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function getData() {
-      const data = getTransactions()
-      if (data) {
-        setTransactions(data)
+      try {
+        const data = await getTransactions()
+        if (data) {
+          setTransactions(data)
+        }
+      } catch (err) {
+        console.error("Error fetching transactions:", err)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     getData()

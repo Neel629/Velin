@@ -42,7 +42,7 @@ export default function SplitExpensesPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      const data = getSplitGroups()
+      const data = await getSplitGroups()
       setGroups(data || [])
     } catch (error: any) {
       toast.error(error.message)
@@ -55,7 +55,7 @@ export default function SplitExpensesPage() {
     setIsSubmitting(true)
     try {
       // 1. Insert the Split Group and Members
-      addSplitGroup({
+      await addSplitGroup({
         title: data.title,
         total_amount: data.total_amount,
         event_date: data.event_date.toISOString().split("T")[0],
@@ -79,7 +79,7 @@ export default function SplitExpensesPage() {
   async function handleToggleSettle(memberId: string, currentStatus: string) {
     const newStatus = currentStatus === 'pending' ? 'settled' : 'pending'
     try {
-      updateSplitMemberStatus(memberId, newStatus)
+      await updateSplitMemberStatus(memberId, newStatus)
       
       toast.success(`Member marked as ${newStatus}`)
       // Optimistic UI update

@@ -6,7 +6,8 @@ import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import { LockIcon, Save, UserIcon } from "lucide-react"
 
-import { getProfile, updateProfile as updateProfileStore } from "@/lib/store"
+import { getProfile, updateProfile as updateProfileStore, signOut } from "@/lib/store"
+import { useRouter } from "next/navigation"
 import { downloadCSV } from "@/lib/export"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -32,6 +33,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const router = useRouter()
   
   // Form State
   const [fullName, setFullName] = useState("")
@@ -73,6 +75,16 @@ export default function SettingsPage() {
       toast.error(error.message || "Failed to save settings")
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      await signOut()
+      router.push("/login")
+      router.refresh()
+    } catch (error: any) {
+      toast.error("Failed to sign out")
     }
   }
 
@@ -193,6 +205,22 @@ export default function SettingsPage() {
               Download Analytics & Data Report (.csv)
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-rose-200 bg-rose-50/50 dark:bg-rose-950/10 dark:border-rose-900/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-rose-600 dark:text-rose-500">
+            Authentication
+          </CardTitle>
+          <CardDescription>
+            Sign out of your account on this device.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={handleSignOut} variant="destructive">
+            Sign Out
+          </Button>
         </CardContent>
       </Card>
     </div>

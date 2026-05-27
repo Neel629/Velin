@@ -42,8 +42,8 @@ export default function TransactionsPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      const txData = getTransactions()
-      const catData = getCategories()
+      const txData = await getTransactions()
+      const catData = await getCategories()
 
       setTransactions(txData || [])
       setCategories(catData || [])
@@ -57,7 +57,7 @@ export default function TransactionsPage() {
   async function handleAddTransaction(values: TransactionFormValues) {
     try {
       const totalAmount = values.amount * values.quantity
-      addTransaction({
+      await addTransaction({
         type: values.type,
         remarks: values.remarks,
         amount: values.amount,
@@ -77,7 +77,7 @@ export default function TransactionsPage() {
 
   async function handleDelete(id: string) {
     try {
-      deleteTransaction(id)
+      await deleteTransaction(id)
       toast.success("Transaction deleted")
       fetchData()
     } catch (error: any) {

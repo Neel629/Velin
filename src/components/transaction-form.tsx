@@ -71,7 +71,7 @@ export function TransactionForm({ onSubmit, isSubmitting, categories = [] }: Tra
       // Wait, we can't cleanly import addCategory here because it might mutate store and react doesn't know. 
       // Actually, we can import it since this is a client component.
       const { addCategory } = await import("@/lib/store")
-      const newCat = addCategory({ name: customCategoryName.trim(), type: values.type })
+      const newCat = await addCategory({ name: customCategoryName.trim(), type: values.type })
       values.category_id = newCat.id
     }
     onSubmit(values)

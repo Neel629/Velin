@@ -35,7 +35,7 @@ export default function CategoriesPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      const data = getCategories()
+      const data = await getCategories()
       setCategories(data || [])
     } catch (error: any) {
       toast.error("Failed to load categories", { description: error.message })
@@ -53,7 +53,7 @@ export default function CategoriesPage() {
     }
 
     try {
-      addCategory({
+      await addCategory({
         name: name.trim(),
         type,
       })
@@ -68,7 +68,7 @@ export default function CategoriesPage() {
 
   async function handleDelete(id: string) {
     try {
-      deleteCategory(id)
+      await deleteCategory(id)
       toast.success("Category deleted")
       fetchData()
     } catch (error: any) {

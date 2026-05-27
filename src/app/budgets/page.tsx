@@ -46,13 +46,14 @@ export default function BudgetsPage() {
     try {
       const startOfYr = startOfYear(new Date()).toISOString()
 
-      const budgetsRes = getBudgets()
-      const categoriesRes = getCategories()
-      const txRes = getTransactions().filter((tx: any) => tx.type === "expense" && tx.transaction_date >= startOfYr)
+      const budgetsRes = await getBudgets()
+      const categoriesRes = await getCategories()
+      const txRes = await getTransactions()
+      const filteredTx = txRes.filter((tx: any) => tx.type === "expense" && tx.transaction_date >= startOfYr)
 
       setBudgets(budgetsRes || [])
       setCategories(categoriesRes || [])
-      setTransactions(txRes || [])
+      setTransactions(filteredTx || [])
     } catch (error: any) {
       toast.error(error.message)
     } finally {
@@ -63,7 +64,7 @@ export default function BudgetsPage() {
   async function handleCreateBudget(data: BudgetFormValues) {
     setIsSubmitting(true)
     try {
-      addBudget({
+      await addBudget({
         category_id: data.category_id,
         limit_amount: data.limit_amount,
         period: data.period,
@@ -83,7 +84,7 @@ export default function BudgetsPage() {
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this budget?")) return
     try {
-      deleteBudget(id)
+      await deleteBudget(id)
       toast.success("Budget deleted")
       setBudgets(prev => prev.filter(b => b.id !== id))
     } catch (error: any) {
