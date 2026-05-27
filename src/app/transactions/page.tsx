@@ -35,31 +35,20 @@ export default function TransactionsPage() {
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
-    async function getUser() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchData(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    }
-    getUser()
+    fetchData()
   }, [])
 
-  async function fetchData(userId: string) {
+  async function fetchData() {
     setLoading(true)
     try {
       const [txRes, catRes] = await Promise.all([
         supabase
           .from("transactions")
           .select("*, categories(name)")
-          .eq("user_id", userId)
           .order("transaction_date", { ascending: false }),
         supabase
           .from("categories")
-          .select("*")
-          .eq("user_id", userId),
+          .select("*"),
       ])
 
       if (txRes.error) throw txRes.error
@@ -75,15 +64,9 @@ export default function TransactionsPage() {
   }
 
   async function handleAddTransaction(values: TransactionFormValues) {
-    if (!user) {
-      toast.error("You must be logged in to add a transaction.")
-      return
-    }
-
     try {
       const totalAmount = values.amount * values.quantity
       const { error } = await supabase.from("transactions").insert({
-        user_id: user.id,
         type: values.type,
         remarks: values.remarks,
         amount: values.amount,
@@ -97,33 +80,24 @@ export default function TransactionsPage() {
 
       toast.success("Transaction added successfully")
       setOpen(false)
-      fetchData(user.id)
+      fetchData()
     } catch (error: any) {
       toast.error("Failed to add transaction", { description: error.message })
     }
   }
 
   async function handleDelete(id: string) {
-    if (!user) return
     try {
       const { error } = await supabase.from("transactions").delete().eq("id", id)
       if (error) throw error
       toast.success("Transaction deleted")
-      fetchData(user.id)
+      fetchData()
     } catch (error: any) {
       toast.error("Failed to delete transaction", { description: error.message })
     }
   }
 
-  if (!user && !loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[50vh] space-y-4">
-        <h2 className="text-2xl font-bold">Authentication Required</h2>
-        <p className="text-muted-foreground">Please sign in to view and manage transactions.</p>
-        <Link href="/login" className={buttonVariants()}>Sign In</Link>
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">

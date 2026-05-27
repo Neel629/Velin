@@ -29,25 +29,19 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function getUserAndData() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+    async function getData() {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*, categories(name)")
+        .order("transaction_date", { ascending: false })
 
-      if (session?.user) {
-        const { data, error } = await supabase
-          .from("transactions")
-          .select("*, categories(name)")
-          .eq("user_id", session.user.id)
-          .order("transaction_date", { ascending: false })
-
-        if (!error && data) {
-          setTransactions(data)
-        }
+      if (!error && data) {
+        setTransactions(data)
       }
       setLoading(false)
     }
 
-    getUserAndData()
+    getData()
   }, [])
 
   const kpis = useMemo(() => {
@@ -158,28 +152,6 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 bg-muted p-3 rounded-full w-fit">
-              <LockIcon className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              Please sign in to view your financial dashboard and data.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="justify-center">
-            <Link href="/login" className={buttonVariants({ variant: "default" })}>
-              Sign In
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-8">

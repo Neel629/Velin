@@ -28,25 +28,15 @@ export default function CategoriesPage() {
   const [type, setType] = useState("expense")
 
   useEffect(() => {
-    async function getUser() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchData(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    }
-    getUser()
+    fetchData()
   }, [])
 
-  async function fetchData(userId: string) {
+  async function fetchData() {
     setLoading(true)
     try {
       const { data, error } = await supabase
         .from("categories")
         .select("*")
-        .eq("user_id", userId)
         .order("created_at", { ascending: false })
 
       if (error) throw error
@@ -60,10 +50,6 @@ export default function CategoriesPage() {
 
   async function handleAddCategory(e: React.FormEvent) {
     e.preventDefault()
-    if (!user) {
-      toast.error("You must be logged in to add a category.")
-      return
-    }
 
     if (!name.trim()) {
       toast.error("Category name is required.")
@@ -72,7 +58,6 @@ export default function CategoriesPage() {
 
     try {
       const { error } = await supabase.from("categories").insert({
-        user_id: user.id,
         name: name.trim(),
         type,
       })
@@ -81,33 +66,23 @@ export default function CategoriesPage() {
 
       toast.success("Category added successfully")
       setName("")
-      fetchData(user.id)
+      fetchData()
     } catch (error: any) {
       toast.error("Failed to add category", { description: error.message })
     }
   }
 
   async function handleDelete(id: string) {
-    if (!user) return
     try {
       const { error } = await supabase.from("categories").delete().eq("id", id)
       if (error) throw error
       toast.success("Category deleted")
-      fetchData(user.id)
+      fetchData()
     } catch (error: any) {
       toast.error("Failed to delete category", { description: error.message })
     }
   }
 
-  if (!user && !loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[50vh] space-y-4">
-        <h2 className="text-2xl font-bold">Authentication Required</h2>
-        <p className="text-muted-foreground">Please sign in to manage categories.</p>
-        <Link href="/login" className={buttonVariants()}>Sign In</Link>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">

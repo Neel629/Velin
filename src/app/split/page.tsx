@@ -35,25 +35,15 @@ export default function SplitExpensesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    async function getUserAndData() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchData(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    }
-    getUserAndData()
+    fetchData()
   }, [])
 
-  async function fetchData(userId: string) {
+  async function fetchData() {
     setLoading(true)
     try {
       const { data, error } = await supabase
         .from("split_groups")
         .select(`*, split_members(*)`)
-        .eq("user_id", userId)
         .order("created_at", { ascending: false })
 
       if (error) throw error
@@ -66,14 +56,12 @@ export default function SplitExpensesPage() {
   }
 
   async function handleCreateGroup(data: SplitGroupFormValues) {
-    if (!user) return
     setIsSubmitting(true)
     try {
       // 1. Insert the Split Group
       const { data: groupData, error: groupError } = await supabase
         .from("split_groups")
         .insert([{
-          user_id: user.id,
           title: data.title,
           total_amount: data.total_amount,
           event_date: data.event_date.toISOString().split("T")[0],
@@ -100,7 +88,7 @@ export default function SplitExpensesPage() {
 
       toast.success("Split group created successfully")
       setOpen(false)
-      fetchData(user.id)
+      fetchData()
     } catch (error: any) {
       toast.error(error.message)
     } finally {
@@ -158,28 +146,6 @@ export default function SplitExpensesPage() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 bg-muted p-3 rounded-full w-fit">
-              <LockIcon className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              Please sign in to manage your shared expenses.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="justify-center">
-            <Link href="/login" className={buttonVariants({ variant: "default" })}>
-              Sign In
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-8">

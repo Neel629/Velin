@@ -37,19 +37,10 @@ export default function BudgetsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    async function getUserAndData() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchData(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    }
-    getUserAndData()
+    fetchData()
   }, [])
 
-  async function fetchData(userId: string) {
+  async function fetchData() {
     setLoading(true)
     try {
       const startOfYr = startOfYear(new Date()).toISOString()
@@ -58,16 +49,13 @@ export default function BudgetsPage() {
         supabase
           .from("budgets")
           .select("*, categories(name, color)")
-          .eq("user_id", userId)
           .order("created_at", { ascending: false }),
         supabase
           .from("categories")
-          .select("*")
-          .eq("user_id", userId),
+          .select("*"),
         supabase
           .from("transactions")
           .select("*")
-          .eq("user_id", userId)
           .eq("type", "expense")
           .gte("transaction_date", startOfYr)
       ])
@@ -87,13 +75,11 @@ export default function BudgetsPage() {
   }
 
   async function handleCreateBudget(data: BudgetFormValues) {
-    if (!user) return
     setIsSubmitting(true)
     try {
       const { error } = await supabase
         .from("budgets")
         .insert([{
-          user_id: user.id,
           category_id: data.category_id,
           limit_amount: data.limit_amount,
           period: data.period,
@@ -104,7 +90,7 @@ export default function BudgetsPage() {
 
       toast.success("Budget created successfully")
       setOpen(false)
-      fetchData(user.id)
+      fetchData()
     } catch (error: any) {
       toast.error(error.message)
     } finally {
@@ -181,28 +167,6 @@ export default function BudgetsPage() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 bg-muted p-3 rounded-full w-fit">
-              <LockIcon className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              Please sign in to manage your budgets.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="justify-center">
-            <Link href="/login" className={buttonVariants({ variant: "default" })}>
-              Sign In
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-8">

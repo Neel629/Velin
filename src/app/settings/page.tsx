@@ -40,45 +40,44 @@ export default function SettingsPage() {
   const { setTheme } = useTheme()
 
   useEffect(() => {
-    async function getUserAndProfile() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
+    async function getProfile() {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .limit(1)
+        .single()
 
-        if (data) {
-          setFullName(data.full_name || "")
-          setCurrency(data.default_currency || "USD")
-          setThemePref(data.theme_preference || "system")
-        }
+      if (data) {
+        setFullName(data.full_name || "")
+        setCurrency(data.default_currency || "USD")
+        setThemePref(data.theme_preference || "system")
       }
       setLoading(false)
     }
-    getUserAndProfile()
+    getProfile()
   }, [])
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!user) return
     
     setSaving(true)
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id, // Primary key
-          full_name: fullName,
-          default_currency: currency,
-          theme_preference: themePref,
-          updated_at: new Date().toISOString()
-        })
+      // Get the first profile to update
+      const { data: profile } = await supabase.from("profiles").select("id").limit(1).single()
+      
+      if (profile) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            full_name: fullName,
+            default_currency: currency,
+            theme_preference: themePref,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", profile.id)
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       // Update the actual app theme immediately
       setTheme(themePref)
@@ -118,28 +117,6 @@ export default function SettingsPage() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 bg-muted p-3 rounded-full w-fit">
-              <LockIcon className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              Please sign in to manage your profile and settings.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="justify-center">
-            <Link href="/login" className={buttonVariants({ variant: "default" })}>
-              Sign In
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -159,11 +136,7 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" value={user.email} disabled className="bg-muted/50" />
-              <p className="text-[0.8rem] text-muted-foreground">Your email address is managed by your authentication provider.</p>
-            </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
