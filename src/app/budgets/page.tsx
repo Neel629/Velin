@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { startOfWeek, startOfMonth, startOfYear, endOfWeek, endOfMonth, endOfYear, isWithinInterval, parseISO } from "date-fns"
 import { Plus, Target, LockIcon, AlertTriangle, Trash2 } from "lucide-react"
 
-import { createClient } from "@/utils/supabase/client"
+import { supabase } from "@/lib/supabase"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -28,7 +28,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { BudgetForm, BudgetFormValues } from "@/components/budget-form"
 
 export default function BudgetsPage() {
-  const supabase = createClient()
   const [user, setUser] = useState<any>(null)
   const [budgets, setBudgets] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
