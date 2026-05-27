@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Wallet, Loader2 } from "lucide-react"
+import { Wallet, Loader2, Mail } from "lucide-react"
 import { toast } from "sonner"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [otpCode, setOtpCode] = useState("")
+  const [otpSent, setOtpSent] = useState(false)
+  
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const router = useRouter()
@@ -59,6 +63,57 @@ export default function LoginPage() {
         toast.error(error.message)
       } else {
         toast.success("Check your email for the confirmation link!")
+      }
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${location.origin}/auth/callback`,
+          shouldCreateUser: true
+        }
+      })
+
+      if (error) {
+        toast.error(error.message)
+      } else {
+        setOtpSent(true)
+        toast.success("OTP sent to your email!")
+      }
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email',
+      })
+
+      if (error) {
+        toast.error(error.message)
+      } else {
+        toast.success("Successfully logged in!")
+        router.push("/")
+        router.refresh()
       }
     } catch (error: any) {
       toast.error(error.message)
@@ -131,49 +186,121 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  className="w-full"
-                  onClick={handleEmailLogin}
-                  disabled={isLoading || isGoogleLoading || !email || !password}
-                  type="submit"
-                >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
-                </Button>
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={handleEmailSignUp}
-                  disabled={isLoading || isGoogleLoading || !email || !password}
-                  type="button"
-                >
-                  Sign Up
-                </Button>
-              </div>
-            </form>
+            <Tabs defaultValue="password" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="password">Password</TabsTrigger>
+                <TabsTrigger value="otp">Email OTP</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="password">
+                <form className="space-y-4" onSubmit={handleEmailLogin}>
+                  <div className="space-y-2">
+                    <Label htmlFor="email-password">Email</Label>
+                    <Input
+                      id="email-password"
+                      type="email"
+                      placeholder="m@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      className="w-full"
+                      disabled={isLoading || isGoogleLoading || !email || !password}
+                      type="submit"
+                    >
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Sign In
+                    </Button>
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      onClick={handleEmailSignUp}
+                      disabled={isLoading || isGoogleLoading || !email || !password}
+                      type="button"
+                    >
+                      Sign Up
+                    </Button>
+                  </div>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="otp">
+                {!otpSent ? (
+                  <form className="space-y-4" onSubmit={handleSendOtp}>
+                    <div className="space-y-2">
+                      <Label htmlFor="email-otp">Email Address</Label>
+                      <Input
+                        id="email-otp"
+                        type="email"
+                        placeholder="m@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button
+                      className="w-full"
+                      type="submit"
+                      disabled={isLoading || !email}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Mail className="mr-2 h-4 w-4" />
+                      )}
+                      Send OTP Code
+                    </Button>
+                  </form>
+                ) : (
+                  <form className="space-y-4" onSubmit={handleVerifyOtp}>
+                    <div className="space-y-2">
+                      <Label htmlFor="otp">One-Time Password</Label>
+                      <Input
+                        id="otp"
+                        type="text"
+                        placeholder="123456"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        required
+                        maxLength={6}
+                        className="text-center text-lg tracking-widest"
+                      />
+                    </div>
+                    <Button
+                      className="w-full"
+                      type="submit"
+                      disabled={isLoading || otpCode.length < 6}
+                    >
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Verify & Sign In
+                    </Button>
+                    <Button
+                      className="w-full"
+                      variant="ghost"
+                      type="button"
+                      onClick={() => setOtpSent(false)}
+                      disabled={isLoading}
+                    >
+                      Use a different email
+                    </Button>
+                  </form>
+                )}
+              </TabsContent>
+            </Tabs>
+
           </CardContent>
         </Card>
       </div>
