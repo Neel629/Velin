@@ -2,7 +2,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Trash2, Tag } from "lucide-react"
+import { Plus, Trash2, Tag, DownloadIcon } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { getCategories, addCategory, deleteCategory } from "@/lib/store"
+import { downloadCategoriesCSV } from "@/lib/export"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
 export default function CategoriesPage() {
@@ -78,9 +79,15 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Categories</h2>
-        <p className="text-muted-foreground">Manage your custom income and expense categories.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Categories</h2>
+          <p className="text-muted-foreground">Manage your custom income and expense categories.</p>
+        </div>
+        <Button onClick={downloadCategoriesCSV} variant="outline" className="shrink-0">
+          <DownloadIcon className="mr-2 h-4 w-4" />
+          Export
+        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-[1fr_300px]">

@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useState } from "react"
 import { z } from "zod"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
@@ -50,6 +51,9 @@ interface TransactionFormProps {
 }
 
 export function TransactionForm({ onSubmit, isSubmitting, categories = [] }: TransactionFormProps) {
+  const [isCustomCategory, setIsCustomCategory] = useState(false)
+  const [customCategoryName, setCustomCategoryName] = useState("")
+
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -61,9 +65,21 @@ export function TransactionForm({ onSubmit, isSubmitting, categories = [] }: Tra
     },
   })
 
+  const handleSubmitWrapper = async (values: TransactionFormValues) => {
+    if (isCustomCategory && customCategoryName.trim()) {
+      // We rely on the parent or store to add the category.
+      // Wait, we can't cleanly import addCategory here because it might mutate store and react doesn't know. 
+      // Actually, we can import it since this is a client component.
+      const { addCategory } = await import("@/lib/store")
+      const newCat = addCategory({ name: customCategoryName.trim(), type: values.type })
+      values.category_id = newCat.id
+    }
+    onSubmit(values)
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmitWrapper)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -87,32 +103,55 @@ export function TransactionForm({ onSubmit, isSubmitting, categories = [] }: Tra
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="category_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {categories.length === 0 ? (
-                      <SelectItem value="none" disabled>No categories available</SelectItem>
-                    ) : (
-                      categories.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  {isCustomCategory ? (
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        placeholder="New category name..." 
+                        value={customCategoryName}
+                        onChange={(e) => setCustomCategoryName(e.target.value)}
+                        autoFocus
+                      />
+                      <Button type="button" variant="ghost" onClick={() => setIsCustomCategory(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Select 
+                      onValueChange={(val) => {
+                        if (val === "custom_new") {
+                          setIsCustomCategory(true)
+                          field.onChange(undefined)
+                        } else {
+                          field.onChange(val)
+                        }
+                      }} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                        <SelectItem value="custom_new" className="text-primary font-medium">
+                          + Create Custom...
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
 
         <FormField

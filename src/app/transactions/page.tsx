@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, DownloadIcon } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
@@ -25,6 +25,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { getTransactions, addTransaction, deleteTransaction, getCategories } from "@/lib/store"
+import { downloadTransactionsCSV } from "@/lib/export"
 import { TransactionForm, TransactionFormValues } from "@/components/transaction-form"
 
 export default function TransactionsPage() {
@@ -88,25 +89,33 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
           <p className="text-muted-foreground">Manage your income and expenses.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button />}>
-              <Plus className="mr-2 h-4 w-4" /> Add Entry
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add Transaction</DialogTitle>
-              <DialogDescription>
-                Enter the details of your transaction below.
-              </DialogDescription>
-            </DialogHeader>
-            <TransactionForm onSubmit={handleAddTransaction} categories={categories} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Button onClick={downloadTransactionsCSV} variant="outline" className="shrink-0">
+            <DownloadIcon className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={
+              <Button>
+                  <Plus className="mr-2 h-4 w-4" /> Add Entry
+              </Button>
+            } />
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add Transaction</DialogTitle>
+                <DialogDescription>
+                  Enter the details of your transaction below.
+                </DialogDescription>
+              </DialogHeader>
+              <TransactionForm onSubmit={handleAddTransaction} categories={categories} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="border rounded-lg bg-card text-card-foreground shadow-sm">

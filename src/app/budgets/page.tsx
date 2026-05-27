@@ -4,9 +4,10 @@ import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { startOfWeek, startOfMonth, startOfYear, endOfWeek, endOfMonth, endOfYear, isWithinInterval, parseISO } from "date-fns"
-import { Plus, Target, LockIcon, AlertTriangle, Trash2 } from "lucide-react"
+import { Plus, Target, LockIcon, AlertTriangle, Trash2, DownloadIcon } from "lucide-react"
 
 import { getBudgets, getCategories, getTransactions, addBudget, deleteBudget } from "@/lib/store"
+import { downloadBudgetsCSV } from "@/lib/export"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -150,27 +151,33 @@ export default function BudgetsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Budgets</h2>
-          <p className="text-muted-foreground">Set spending limits and track your progress.</p>
+          <p className="text-muted-foreground">Set spending limits and monitor your progress.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Budget
-            </Button>
-          } />
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create Budget</DialogTitle>
-              <DialogDescription>
-                Set a spending limit for a specific category.
-              </DialogDescription>
-            </DialogHeader>
-            <BudgetForm categories={categories} onSubmit={handleCreateBudget} isSubmitting={isSubmitting} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Button onClick={downloadBudgetsCSV} variant="outline" className="shrink-0">
+            <DownloadIcon className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={
+              <Button className="shrink-0">
+                <Plus className="mr-2 h-4 w-4" /> New Budget
+              </Button>
+            } />
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Create Budget</DialogTitle>
+                <DialogDescription>
+                  Set a new spending limit for a category.
+                </DialogDescription>
+              </DialogHeader>
+              <BudgetForm onSubmit={handleCreateBudget} isSubmitting={isSubmitting} categories={categories} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {budgets.length === 0 ? (

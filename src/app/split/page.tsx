@@ -4,9 +4,10 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { format, parseISO } from "date-fns"
-import { Plus, Users, LockIcon, CheckCircle2, Circle } from "lucide-react"
+import { Plus, Users, LockIcon, CheckCircle2, Circle, DownloadIcon } from "lucide-react"
 
 import { getSplitGroups, addSplitGroup, updateSplitMemberStatus } from "@/lib/store"
+import { downloadSplitsCSV } from "@/lib/export"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -123,25 +124,33 @@ export default function SplitExpensesPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Split Expenses</h2>
-          <p className="text-muted-foreground">Manage shared bills and track who owes you.</p>
+          <p className="text-muted-foreground">Manage group trips and shared bills.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button />}>
-            <Plus className="mr-2 h-4 w-4" /> Create Group
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Split Group</DialogTitle>
-              <DialogDescription>
-                Add the total bill and specify how much each person owes.
-              </DialogDescription>
-            </DialogHeader>
-            <SplitGroupForm onSubmit={handleCreateGroup} isSubmitting={isSubmitting} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Button onClick={downloadSplitsCSV} variant="outline" className="shrink-0">
+            <DownloadIcon className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={
+              <Button className="shrink-0">
+                <Plus className="mr-2 h-4 w-4" /> New Group
+              </Button>
+            } />
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Create Split Group</DialogTitle>
+                <DialogDescription>
+                  Enter the details of your shared expense.
+                </DialogDescription>
+              </DialogHeader>
+              <SplitGroupForm onSubmit={handleCreateGroup} isSubmitting={isSubmitting} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {groups.length === 0 ? (

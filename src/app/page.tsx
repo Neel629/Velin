@@ -18,6 +18,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from "recharts"
 import { getTransactions } from "@/lib/store"
 import { downloadCSV } from "@/lib/export"
@@ -245,7 +246,16 @@ export default function DashboardPage() {
           <CardContent className="h-[300px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
+                <Pie 
+                  data={pieChartData} 
+                  cx="50%" 
+                  cy="50%" 
+                  innerRadius={60} 
+                  outerRadius={80} 
+                  paddingAngle={2} 
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                >
                   {pieChartData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
@@ -258,6 +268,7 @@ export default function DashboardPage() {
                   itemStyle={{ color: "var(--foreground)" }}
                   formatter={(value: any) => Number(value).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                 />
+                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
